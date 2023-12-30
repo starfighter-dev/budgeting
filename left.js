@@ -14,25 +14,31 @@ void (async () => {
         crlfDelay: Infinity,
     });
 
-    rl.on('line', (l) => {
+    const lines = [];
 
-        if (/^  \d{2}/.test(l) || /^  --/.test(l)) {
-            if ((/\| (PAID|SEND)/.test(l) && total != 0)) {
-                console.log(l);
-                console.log(`\nTotal going out: £${total.toFixed(2)}\n`);
-                if (compare) {
-                    const diff = compare - total;
-                    console.log(`\nYou have £${diff.toFixed(2)} left.\n`);
-                }
-                process.exit();
-            }
-            if (!/\| (PAID|SEND)/.test(l)) {
-                const spl = l.split('|');
-                total += parseFloat(spl[2]);
-                console.log(l);
-            }
-        }
+    rl.on('line', (l) => {
+        lines.unshift(l);
     });
 
-    await new Promise((res) => rl.once('close', res));
+    rl.on('close', () => {
+        lines.forEach((l) => {
+         if (/^  \d{2}/.test(l) || /^  --/.test(l)) {
+               if ((/\| (PAID|SEND)/.test(l) && total != 0)) {
+                  console.log(l);
+                  console.log(`\nTotal going out: £${total.toFixed(2)}\n`);
+                  if (compare) {
+                     const diff = compare - total;
+                     console.log(`\nYou have £${diff.toFixed(2)} left.\n`);
+                  }
+                  process.exit();
+               }
+               if (!/\| (PAID|SEND)/.test(l)) {
+                  const spl = l.split('|');
+                  total += parseFloat(spl[2]);
+                  console.log(l);
+               }
+         }
+        });
+    });
+
 })();
